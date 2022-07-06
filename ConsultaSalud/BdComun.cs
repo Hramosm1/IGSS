@@ -332,10 +332,11 @@ namespace ConsultaSalud
             conexion.Open();
             SqlCommand cmd = conexion.CreateCommand();
 
-            sql = "SELECT DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE FROM SALUD.CONTRIBUCIONES WHERE CODIGO_PATRONO = @PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
+            sql = "SELECT DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE FROM SALUD.CONTRIBUCIONES WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE_PATRONO = @NOMBRE_PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
 
             cmd.CommandText = sql;
             cmd.Parameters.AddWithValue("@PATRONO", controbuciones.codigo_patron);
+            cmd.Parameters.AddWithValue("@NOMBRE_PATRONO", controbuciones.nombre_patrono);
             cmd.Parameters.AddWithValue("@DPI", controbuciones.dpi);
             cmd.Parameters.AddWithValue("@MES", controbuciones.mes);
             cmd.Parameters.AddWithValue("@AÑO", controbuciones.año);
@@ -349,6 +350,7 @@ namespace ConsultaSalud
                 patrono.mes = Convert.ToInt32(reader.GetDecimal(3));
                 patrono.razon = reader.GetString(4);
                 patrono.aporte = reader.GetString(5);
+                patrono.nombre_patrono = reader.GetString(6);
                 retorno = 1;
             }
             conexion.Close();
@@ -356,8 +358,8 @@ namespace ConsultaSalud
             {
                 conexion.Open();
                 cmd.Connection = conexion;
-                sql = "Insert into SALUD.contribuciones(DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE)";
-                sql = sql + " VALUES (@DPI,@PATRON,@AÑO,@MES,@RAZON,APORTE)";
+                sql = "Insert into SALUD.contribuciones(DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE,NOMBRE_PATRONO)";
+                sql = sql + " VALUES (@DPI,@PATRON,@AÑO,@MES,@RAZON,APORTE,@NOMBRE_PATRONO)";
 
                 cmd.CommandText = sql;
                 cmd.Parameters.AddWithValue("@RAZON_SOCIAL", controbuciones.razon);
@@ -369,7 +371,7 @@ namespace ConsultaSalud
             {
                 conexion.Open();
                 cmd.Connection = conexion;
-                sql = "update SALUD.contribuciones set  APORTE = @APORTE WHERE CODIGO_PATRONO = @PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
+                sql = "update SALUD.contribuciones set  APORTE = @APORTE WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE_PATRONO = @NOMBRE_PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
 
                 cmd.CommandText = sql;
                 cmd.Parameters.AddWithValue("@APORTE", controbuciones.aporte);
@@ -382,74 +384,84 @@ namespace ConsultaSalud
 
 
         }
-        public int agregar_detalle(int codigo_patron, decimal dpi, int mes, int año, string razon, string aporte)
+        public int agregar_detalle(int codigo_patron, decimal dpi, int mes, int año, string razon, string aporte, string nombre_patrono)
         {
+            
             ControbucionesModel patrono = new ControbucionesModel();
             int retorno = 0;
             SqlDataReader reader;
-            conexion.Open();
-            SqlCommand cmd = conexion.CreateCommand();
-            String sql;
-            sql = "SELECT DPI, CODIGO_PATRONO,CONVERT(int,AÑO) AÑO, CONVERT(int,MES) MES, RAZON_SOCIAL, APORTE FROM SALUD.CONTRIBUCIONES WHERE CODIGO_PATRONO = @PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
 
-            cmd.CommandText = sql;
-            cmd.Parameters.AddWithValue("@PATRONO", codigo_patron);
-            cmd.Parameters.AddWithValue("@DPI", dpi);
-            cmd.Parameters.AddWithValue("@MES", mes);
-            cmd.Parameters.AddWithValue("@AÑO", año);
-            reader = cmd.ExecuteReader();
-
-            while (reader.Read())
-            {
-                patrono.codigo_patron = reader.GetInt32(1);
-                patrono.dpi = reader.GetDecimal(0);
-                patrono.año = reader.GetInt32(2);
-                patrono.mes = reader.GetInt32(3);
-                patrono.razon = reader.GetString(4);
-                patrono.aporte = reader.GetString(5);
-                retorno = 1;
-            }
-            conexion.Close();
-            if (patrono.codigo_patron == 0)
-            {
+            try {
                 conexion.Open();
-                cmd.Connection = conexion;
-
-                sql = "Insert into SALUD.contribuciones(DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE)";
-                sql = sql + " VALUES (@DPI,@PATRONO,@AÑO,@MES,@RAZON,@APORTE)";
+                SqlCommand cmd = conexion.CreateCommand();
+                String sql;
+                sql = "SELECT DPI, CODIGO_PATRONO,CONVERT(int,AÑO) AÑO, CONVERT(int,MES) MES, RAZON_SOCIAL, APORTE, NOMBRE_PATRONO FROM SALUD.CONTRIBUCIONES WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE_PATRONO = @NOMBRE_PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
 
                 cmd.CommandText = sql;
-                cmd.Parameters.Clear();
                 cmd.Parameters.AddWithValue("@PATRONO", codigo_patron);
                 cmd.Parameters.AddWithValue("@DPI", dpi);
                 cmd.Parameters.AddWithValue("@MES", mes);
                 cmd.Parameters.AddWithValue("@AÑO", año);
-                cmd.Parameters.AddWithValue("@RAZON", razon);
-                cmd.Parameters.AddWithValue("@APORTE", aporte);
+                cmd.Parameters.AddWithValue("@NOMBRE_PATRONO", nombre_patrono);
+                reader = cmd.ExecuteReader();
 
-                retorno = cmd.ExecuteNonQuery();
+                while (reader.Read())
+                {
+                    patrono.codigo_patron = reader.GetInt32(1);
+                    patrono.dpi = reader.GetDecimal(0);
+                    patrono.año = reader.GetInt32(2);
+                    patrono.mes = reader.GetInt32(3);
+                    patrono.razon = reader.GetString(4);
+                    patrono.aporte = reader.GetString(5);
+                    patrono.nombre_patrono = reader.GetString(6);
+                    retorno = 1;
+                }
                 conexion.Close();
+                if (patrono.codigo_patron == 0)
+                {
+                    conexion.Open();
+                    cmd.Connection = conexion;
 
-            }
-            else
-            {
-                conexion.Open();
-                cmd.Connection = conexion;
-                sql = "update SALUD.contribuciones set  APORTE = @APORTE WHERE CODIGO_PATRONO = @PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
+                    sql = "Insert into SALUD.contribuciones(DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE,NOMBRE_PATRONO)";
+                    sql = sql + " VALUES (@DPI,@PATRONO,@AÑO,@MES,@RAZON,@APORTE,@NOMBRE_PATRONO)";
 
-                cmd.CommandText = sql;
-                cmd.Parameters.Clear();
-                cmd.Parameters.AddWithValue("@PATRONO", codigo_patron);
-                cmd.Parameters.AddWithValue("@DPI", dpi);
-                cmd.Parameters.AddWithValue("@MES", mes);
-                cmd.Parameters.AddWithValue("@AÑO", año);
-                cmd.Parameters.AddWithValue("@RAZON", razon);
-                cmd.Parameters.AddWithValue("@APORTE", aporte);
+                    cmd.CommandText = sql;
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@PATRONO", codigo_patron);
+                    cmd.Parameters.AddWithValue("@DPI", dpi);
+                    cmd.Parameters.AddWithValue("@MES", mes);
+                    cmd.Parameters.AddWithValue("@AÑO", año);
+                    cmd.Parameters.AddWithValue("@RAZON", razon);
+                    cmd.Parameters.AddWithValue("@APORTE", aporte);
+                    cmd.Parameters.AddWithValue("@NOMBRE_PATRONO", nombre_patrono);
 
-                retorno = cmd.ExecuteNonQuery();
+                    retorno = cmd.ExecuteNonQuery();
+                    conexion.Close();
+
+                }
+                else
+                {
+                    conexion.Open();
+                    cmd.Connection = conexion;
+                    sql = "update SALUD.contribuciones set  APORTE = @APORTE WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE_PATRONO = @NOMBRE_PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
+
+                    cmd.CommandText = sql;
+                    cmd.Parameters.Clear();
+                    cmd.Parameters.AddWithValue("@PATRONO", codigo_patron);
+                    cmd.Parameters.AddWithValue("@DPI", dpi);
+                    cmd.Parameters.AddWithValue("@MES", mes);
+                    cmd.Parameters.AddWithValue("@AÑO", año);
+                    cmd.Parameters.AddWithValue("@RAZON", razon);
+                    cmd.Parameters.AddWithValue("@APORTE", aporte);
+                    cmd.Parameters.AddWithValue("@NOMBRE_PATRONO", nombre_patrono);
+
+                    retorno = cmd.ExecuteNonQuery();
+                    conexion.Close();
+                }
                 conexion.Close();
             }
-            conexion.Close();
+            catch (Exception ex) { }
+            
             return retorno;
 
         }
@@ -463,19 +475,19 @@ namespace ConsultaSalud
             {
                 conexion.Open();
                 SqlCommand cmd = conexion.CreateCommand();
-                SqlCommand cmd2 = conexion.CreateCommand();
+                //SqlCommand cmd2 = conexion.CreateCommand();
 
                 String sql;
-                String update;
+                //String update;
 
-                sql = "SELECT CODIGO_PATRONO, NOMBRE FROM SALUD.PATRONO WHERE CODIGO_PATRONO = @PATRONO";
+                sql = "SELECT CODIGO_PATRONO, NOMBRE FROM SALUD.PATRONO WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE = @NOMBRE ";
 
                 cmd.CommandText = sql;
                 cmd.Parameters.AddWithValue("@PATRONO", patron.codigo_patron);
                 cmd.Parameters.AddWithValue("@NOMBRE", patron.nombre);
                 reader = cmd.ExecuteReader();
 
-                if (reader.Read()==true)
+                /*if (reader.Read()==true)
                 {
                     conexion.Close();
                     conexion.Open();
@@ -489,7 +501,7 @@ namespace ConsultaSalud
                 conexion.Close();
                 conexion.Open();
                 cmd.CommandText = sql;
-                reader = cmd.ExecuteReader();
+                reader = cmd.ExecuteReader();*/
 
                 while (reader.Read())
                 {
@@ -564,7 +576,7 @@ namespace ConsultaSalud
                 string sql;
                 sql = "SELECT PERSONAS.DPI, PERSONAS.NOMBRE, PERSONAS.FECHA_NACIMIENTO,  Convert(nvarchar,personas.telefono) TELEFONO, Convert(int,ISNULL(PATRONO.CODIGO_PATRONO,0)) CODIGO_PATRONO, ISNULL(PATRONO.NOMBRE,'NO EXISTEN DATOS') ";
                 sql = sql + " NOMBRE_PATRONO, Convert(int,ISNULL(CONTRIBUCIONES.AÑO,0)) AÑO, Convert(int,ISNULL(CONTRIBUCIONES.MES,0)) MES, ISNULL(CONTRIBUCIONES.RAZON_SOCIAL,'') RAZON_SOCIAL, case ISNULL(CONTRIBUCIONES.APORTE,'N') when 'S' THEN 'SI' ELSE 'NO' END APORTE ";
-                sql = sql + " FROM SALUD.PERSONAS   left join SALUD.CONTRIBUCIONES  on PERSONAS.DPI = CONTRIBUCIONES.DPI   left join   SALUD.PATRONO on PATRONO.CODIGO_PATRONO = CONTRIBUCIONES.CODIGO_PATRONO";
+                sql = sql + " FROM SALUD.PERSONAS   left join SALUD.CONTRIBUCIONES  on PERSONAS.DPI = CONTRIBUCIONES.DPI LEFT JOIN SALUD.PATRONO on PATRONO.CODIGO_PATRONO = CONTRIBUCIONES.CODIGO_PATRONO AND PATRONO.NOMBRE = CONTRIBUCIONES.NOMBRE_PATRONO";
                 sql = sql + " where PERSONAS.DPI IN (" + dpis + ") ";
                 sql = sql + " order by 1,7 DESC,8 DESC ;";
 
@@ -614,7 +626,7 @@ namespace ConsultaSalud
             string sql;
             sql = "SELECT PERSONAS.DPI, PERSONAS.NOMBRE, isnull(convert(date,PERSONAS.FECHA_NACIMIENTO,1),'') FECHA_NACIMIENTO,  Convert(nvarchar,personas.telefono) TELEFONO, Convert(int,ISNULL(PATRONO.CODIGO_PATRONO,0)) CODIGO_PATRONO, ISNULL(PATRONO.NOMBRE,'NO EXISTEN DATOS') ";
             sql = sql + " NOMBRE_PATRONO, Convert(int,ISNULL(CONTRIBUCIONES.AÑO,0)) AÑO, Convert(int,ISNULL(CONTRIBUCIONES.MES,0)) MES, ISNULL(CONTRIBUCIONES.RAZON_SOCIAL,'') RAZON_SOCIAL, case ISNULL(CONTRIBUCIONES.APORTE,'N') when 'S' THEN 'SI' ELSE 'NO' END APORTE ";
-            sql = sql + " FROM SALUD.PERSONAS   left join SALUD.CONTRIBUCIONES  on PERSONAS.DPI = CONTRIBUCIONES.DPI   left join   SALUD.PATRONO on PATRONO.CODIGO_PATRONO = CONTRIBUCIONES.CODIGO_PATRONO";
+            sql = sql + " FROM SALUD.PERSONAS   left join SALUD.CONTRIBUCIONES  on PERSONAS.DPI = CONTRIBUCIONES.DPI LEFT JOIN SALUD.PATRONO on PATRONO.CODIGO_PATRONO = CONTRIBUCIONES.CODIGO_PATRONO AND PATRONO.NOMBRE = CONTRIBUCIONES.NOMBRE_PATRONO";
             sql = sql + " where PERSONAS.DPI IN (" + dpis + ") ";
             sql = sql + " order by 1,7 DESC,8 DESC ;";
 

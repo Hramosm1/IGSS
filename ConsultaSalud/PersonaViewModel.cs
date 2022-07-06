@@ -31,6 +31,7 @@ namespace ConsultaSalud
         public int mes { get; set; }
         public string razon { get; set; }
         public string aporte { get; set; }
+        public string nombre_patrono { get; set; }
     }
     public class ModelIgss
     {
