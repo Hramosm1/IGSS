@@ -1124,7 +1124,7 @@ namespace ConsultaSalud
                                 if (conexion.agregar_patrono(patron) == 1)
                                 {
 
-                                    conexion.agregar_detalle(no_patrono, Convert.ToDecimal(persona.dpi), _mes, año, razon, _aporto);
+                                    conexion.agregar_detalle(no_patrono, Convert.ToDecimal(persona.dpi), _mes, año, razon, _aporto, patrono);
 
                                     rpersona.dpi = persona.dpi;
                                     rpersona.nombre = persona.nombre;
@@ -1302,7 +1302,7 @@ namespace ConsultaSalud
                                 if (conexion.agregar_patrono(patron) == 1)
                                 {
                                     
-                                        conexion.agregar_detalle(no_patrono,Convert.ToDecimal(persona.dpi),_mes, año,razon,_aporto);
+                                        conexion.agregar_detalle(no_patrono,Convert.ToDecimal(persona.dpi),_mes, año,razon,_aporto, patrono);
                                     
                                     rpersona.dpi = persona.dpi;
                                     rpersona.nombre = persona.nombre;
