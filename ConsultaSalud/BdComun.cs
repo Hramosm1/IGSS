@@ -371,7 +371,11 @@ namespace ConsultaSalud
             {
                 conexion.Open();
                 cmd.Connection = conexion;
-                sql = "update SALUD.contribuciones set  APORTE = @APORTE WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE_PATRONO = @NOMBRE_PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
+                sql = "DELETE FROM SALUD.CONTRIBUCIONES WHERE DPI = @DPI AND CODIGO_PATRONO = @PATRONO ";
+                sql = sql + "Insert into SALUD.contribuciones(DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE,NOMBRE_PATRONO)";
+                sql = sql + " VALUES (@DPI,@PATRONO,@AÑO,@MES,@RAZON,@APORTE,@NOMBRE_PATRONO)";
+
+                //sql = "update SALUD.contribuciones set  APORTE = @APORTE WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE_PATRONO = @NOMBRE_PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
 
                 cmd.CommandText = sql;
                 cmd.Parameters.AddWithValue("@APORTE", controbuciones.aporte);
@@ -443,7 +447,11 @@ namespace ConsultaSalud
                 {
                     conexion.Open();
                     cmd.Connection = conexion;
-                    sql = "update SALUD.contribuciones set  APORTE = @APORTE WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE_PATRONO = @NOMBRE_PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
+                    sql = "DELETE FROM SALUD.CONTRIBUCIONES WHERE DPI = @DPI AND CODIGO_PATRONO = @PATRONO ";
+                    sql = sql + "Insert into SALUD.contribuciones(DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE,NOMBRE_PATRONO)";
+                    sql = sql + " VALUES (@DPI,@PATRONO,@AÑO,@MES,@RAZON,@APORTE,@NOMBRE_PATRONO)";
+
+                    //sql = sql + "update SALUD.contribuciones set  APORTE = @APORTE WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE_PATRONO = @NOMBRE_PATRONO AND DPI = @DPI AND MES = @MES AND AÑO = @AÑO";
 
                     cmd.CommandText = sql;
                     cmd.Parameters.Clear();
@@ -475,33 +483,13 @@ namespace ConsultaSalud
             {
                 conexion.Open();
                 SqlCommand cmd = conexion.CreateCommand();
-                //SqlCommand cmd2 = conexion.CreateCommand();
-
                 String sql;
-                //String update;
-
                 sql = "SELECT CODIGO_PATRONO, NOMBRE FROM SALUD.PATRONO WHERE CODIGO_PATRONO = @PATRONO AND NOMBRE = @NOMBRE ";
 
                 cmd.CommandText = sql;
                 cmd.Parameters.AddWithValue("@PATRONO", patron.codigo_patron);
                 cmd.Parameters.AddWithValue("@NOMBRE", patron.nombre);
                 reader = cmd.ExecuteReader();
-
-                /*if (reader.Read()==true)
-                {
-                    conexion.Close();
-                    conexion.Open();
-                    cmd2.Connection = conexion;
-                    update = "update SALUD.patrono set NOMBRE = @NOMBRE WHERE CODIGO_PATRONO = @PATRONO";
-                    cmd2.CommandText = update;
-                    cmd2.Parameters.AddWithValue("@PATRONO", patron.codigo_patron);
-                    cmd2.Parameters.AddWithValue("@NOMBRE", patron.nombre);
-                    cmd2.ExecuteNonQuery();
-                }
-                conexion.Close();
-                conexion.Open();
-                cmd.CommandText = sql;
-                reader = cmd.ExecuteReader();*/
 
                 while (reader.Read())
                 {
