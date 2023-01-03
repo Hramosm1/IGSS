@@ -468,7 +468,7 @@ namespace ConsultaSalud
                     }
                     else
                     {
-                        conexion.Open();
+                        /*conexion.Open();
                         cmd.Connection = conexion;
                         sql = "DELETE FROM SALUD.CONTRIBUCIONES WHERE DPI = @DPI AND CODIGO_PATRONO = @PATRONO ";
                         sql = sql + "Insert into SALUD.contribuciones(DPI, CODIGO_PATRONO, AÑO, MES, RAZON_SOCIAL, APORTE,NOMBRE_PATRONO)";
@@ -485,7 +485,7 @@ namespace ConsultaSalud
                         cmd.Parameters.AddWithValue("@NOMBRE_PATRONO", nombre_patrono);
 
                         retorno = cmd.ExecuteNonQuery();
-                        conexion.Close();
+                        conexion.Close();*/
                     }
                     conexion.Close();
                 }
