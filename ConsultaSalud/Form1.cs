@@ -22,6 +22,8 @@ using System.Text;
 using MySql.Data.MySqlClient;
 using System.Linq;
 
+using OpenQA.Selenium.Interactions;
+
 namespace ConsultaSalud
 {
     public partial class Padre : System.Windows.Forms.Form
@@ -1008,7 +1010,7 @@ namespace ConsultaSalud
             showsubmenudescarga(submenudescarga);
         }
         public async void RealizarConsulta(PersonaViewModel persona, IWebDriver driver)
-        {
+         {
             ModelIgss rpersona = new ModelIgss();
 
             /*ChromeOptions options = new ChromeOptions();
@@ -1034,9 +1036,10 @@ namespace ConsultaSalud
 
 
                 driver.Navigate().GoToUrl("https://www.igssgt.org/cuotas/");
-                Thread.Sleep(2000);
+                Thread.Sleep(1500);
                 ANUNCIO(driver);
-               
+                bool nuevoAnuncio;
+
                 string script = "document.getElementsByClassName('g-recaptcha')[0].remove();";
                 ((IJavaScriptExecutor)driver).ExecuteScript(script);
 
@@ -1062,6 +1065,23 @@ namespace ConsultaSalud
                 IWebElement year = driver.FindElement(By.Name("nacimiento-anio"));
                 year.SendKeys(persona.fecha.Year.ToString());
 
+                try
+                {
+                    driver.FindElement(By.Id("contenedor-imagen"));
+                    nuevoAnuncio = true;
+                }
+                catch
+                {
+                    nuevoAnuncio = false;
+                }
+
+                if (nuevoAnuncio)
+                {
+
+                    string quitarAnuncio = "ocultarImagen();";
+                    ((IJavaScriptExecutor)driver).ExecuteScript(quitarAnuncio);
+
+                }
 
                 IWebElement boton = driver.FindElement(By.Id("btnConsultar"));
                 boton.Submit();
