@@ -1,5 +1,6 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Data;
 using System.Diagnostics;
@@ -21,8 +22,10 @@ using WebDriverManager.DriverConfigs.Impl;
 using System.Text;
 using MySql.Data.MySqlClient;
 using System.Linq;
-
 using OpenQA.Selenium.Interactions;
+using System.Net.Http;
+using System.Net;
+
 
 namespace ConsultaSalud
 {
@@ -648,7 +651,6 @@ namespace ConsultaSalud
             
         }
 
-
         public void ConsultaIgss()
         {
             //KillAllTasksByName("chromedriver");
@@ -1009,11 +1011,15 @@ namespace ConsultaSalud
         {
             showsubmenudescarga(submenudescarga);
         }
+        
         public async void RealizarConsulta(PersonaViewModel persona, IWebDriver driver)
          {
             ModelIgss rpersona = new ModelIgss();
+            bool nuevoAnuncio;
+            string id = "";
+            string answer = ""; ;
 
-            /*ChromeOptions options = new ChromeOptions();
+            ChromeOptions options = new ChromeOptions();
             
             options.AddArgument("no-sandbox");
 
@@ -1026,23 +1032,36 @@ namespace ConsultaSalud
             // string workingDirectory = Environment.CurrentDirectory;
             //string projectDirectory = Directory.GetParent(workingDirectory).Parent.Parent.FullName;
             new WebDriverManager.DriverManager().SetUpDriver(new ChromeConfig());
-            IWebDriver driver = new ChromeDriver(service, options, TimeSpan.FromMinutes(5));*/
-           
 
             try
             {
 
-                // driver.Manage().Timeouts().PageLoad.Add(TimeSpan.FromSeconds(190));
-
-
                 driver.Navigate().GoToUrl("https://www.igssgt.org/cuotas/");
-                Thread.Sleep(1500);
-                ANUNCIO(driver);
-                bool nuevoAnuncio;
+               
+                // Esperar a que se cargue el contenido de la página
+                WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(30));
+                wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript("return document.readyState").Equals("complete"));
 
-                string script = "document.getElementsByClassName('g-recaptcha')[0].remove();";
-                ((IJavaScriptExecutor)driver).ExecuteScript(script);
+                try
+                {
+                    driver.FindElement(By.Id("contenedor-imagen"));
+                    nuevoAnuncio = true;
+                }
+                catch
+                {
+                    nuevoAnuncio = false;
+                }
 
+                if (nuevoAnuncio)
+                {
+
+                    string quitarAnuncio = "ocultarImagen();";
+                    ((IJavaScriptExecutor)driver).ExecuteScript(quitarAnuncio);
+
+                }
+
+                /*string script = "document.getElementsByClassName('g-recaptcha')[0].remove()";
+                ((IJavaScriptExecutor)driver).ExecuteScript(script);*/
 
                 IWebElement DPI = driver.FindElement(By.Name("txtNumAfiliado"));
                 DPI.Clear();
@@ -1064,30 +1083,67 @@ namespace ConsultaSalud
 
                 IWebElement year = driver.FindElement(By.Name("nacimiento-anio"));
                 year.SendKeys(persona.fecha.Year.ToString());
+                
+                // Eliminacion de Captcha utilizando 2Captcha.
+                var keygoogle = driver.FindElement(By.XPath("/html/body/div[3]/div/div[1]/form/div[4]/div/div/iframe"));
+                var key = keygoogle.GetAttribute("src");
 
-                try
+                Uri keys = new Uri(key);
+                string google = HttpUtility.ParseQueryString(keys.Query).Get("k");
+
+                Solver solver = new Solver();
+                id = solver.post(google);
+
+                ((IJavaScriptExecutor)driver).ExecuteScript("document.getElementById(\"g-recaptcha-response\").style.display = \"inline\";");
+
+                while (true)
                 {
-                    driver.FindElement(By.Id("contenedor-imagen"));
-                    nuevoAnuncio = true;
+                    answer = solver.get(id.Substring(3));
+                    if (answer == "CAPCHA_NOT_READY")
+                    {
+                        Thread.Sleep(2500);
+                    }
+                    else { break; }
                 }
-                catch
+                if (answer.StartsWith("ERROR_"))
                 {
-                    nuevoAnuncio = false;
-                }
 
-                if (nuevoAnuncio)
+                    driver.Close();
+                    driver.Quit();
+                    alerta.ErrorMensaje("Error 2Captcha: " + answer );
+                }
+                else
                 {
+                    IWebElement TOKEN = driver.FindElement(By.Id("g-recaptcha-response"));
+                    TOKEN.SendKeys(answer.Substring(3));
 
-                    string quitarAnuncio = "ocultarImagen();";
-                    ((IJavaScriptExecutor)driver).ExecuteScript(quitarAnuncio);
+                    IWebElement captchaInput = driver.FindElement(By.XPath("/html/body/div[3]/div/div[1]/form/div[4]/div/textarea"));
+                    ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].style.display = 'block'; ", captchaInput);
+
+                    IWebElement boton = driver.FindElement(By.Id("btnConsultar"));
+                    boton.Submit();
 
                 }
 
-                IWebElement boton = driver.FindElement(By.Id("btnConsultar"));
-                boton.Submit();
                 Boolean bandera = true;
                 while (bandera)
                 {
+                    try
+                    {
+                        driver.FindElement(By.Id("contenedor-imagen"));
+                        nuevoAnuncio = true;
+                    }
+                    catch
+                    {
+                        nuevoAnuncio = false;
+                    }
+
+                    if (nuevoAnuncio)
+                    {
+                        string quitarAnuncio = "ocultarImagen();";
+                        ((IJavaScriptExecutor)driver).ExecuteScript(quitarAnuncio);
+                    }
+
                     IList<IWebElement> hijos = driver.FindElements(By.XPath("//table[@id='zero_config']/tbody/tr/th"));
                     int i2 = 0;
                     if (hijos.Count > 0)
@@ -1196,11 +1252,7 @@ namespace ConsultaSalud
                         ListResult.Add(rpersona);
                         bandera = false;
                     }
-                } //While bandera
-                //driver.Navigate().GoToUrl("https://www.igssgt.org/cuotas/");
-               /* driver.Close();
-                driver.Quit();*/
-
+                } 
             }
             catch (Exception EX)
             {
