@@ -43,7 +43,7 @@ namespace twoCaptcha
 
             string key = "142286423b9c59c950c8239a350e11a6";
             string method = "userrecaptcha";
-            string pageurl = "https://registrovacunacovid.mspas.gob.gt/mspas/citas/consulta";
+            string pageurl = "https://www.igssgt.org/cuotas/";
             string postData = "key=" + key + "&method=" + method + "&googlekey=" + googlekey + "&pageurl=" + pageurl;
             using (var writer = new StreamWriter(request.GetRequestStream()))
             {
